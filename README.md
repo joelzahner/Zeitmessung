@@ -1,2 +1,2 @@
 # Zeitmessung
-UHF RFID Zeitmessanlage
+Zeitmessanlage für den Veloclub Maseltrangen https://www.vcmaseltrangen.ch/
