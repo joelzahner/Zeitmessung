@@ -116,7 +116,7 @@ class RFIDApp(ctk.CTk):
         self.mode_combobox.pack_forget()
         self.start_button.pack_forget()
 
-        if mode == "Zuordnen":
+        if mode == "Anmeldung":
             self.assign_tags()
             self.geometry("500x200")
         else:
