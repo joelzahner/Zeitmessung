@@ -29,7 +29,7 @@ class RFIDApp(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.iconbitmap(resource_path("vcm.ico"))
-        self.title("Zeitmessung VCM Ziel")
+        self.title("VCM Zeitmessung Ziel")
         self.geometry("500x200")
 
         self.grid_rowconfigure(0, weight=1)
