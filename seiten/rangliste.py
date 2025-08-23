@@ -144,8 +144,8 @@ class RanglisteFrame(ctk.CTkFrame):
                 if {"Rennzeit_flach", "Rennzeit_berg"}.issubset(df_kat.columns):
                     df_kat.rename(
                         columns={
-                            "Rennzeit_flach": "Rennzeit Flach",
-                            "Rennzeit_berg": "Rennzeit Berg",
+                            "Rennzeit_flach": "Zeit Flach",
+                            "Rennzeit_berg": "Zeit Berg",
                         },
                         inplace=True,
                     )
@@ -156,8 +156,8 @@ class RanglisteFrame(ctk.CTkFrame):
                             "Nachname",
                             "Jahrgang",
                             "Wohnort",
-                            "Rennzeit Flach",
-                            "Rennzeit Berg",
+                            "Zeit Flach",
+                            "Zeit Berg",
                             "Rennzeit",
                             "Rückstand",
                         ]
