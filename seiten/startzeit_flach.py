@@ -7,7 +7,8 @@ from tkinter import messagebox
 ANMELDUNG_PATH = os.path.join("Datenbank", "Anmeldung.csv")
 TABELLEN_ORDNER = "Datenbank"
 
-class StartzeitErfassungFrame(ctk.CTkFrame):
+# Erfassung der Startzeiten für das Flachrennen
+class StartzeitFlachErfassungFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.grid_columnconfigure(0, weight=1)
@@ -18,7 +19,10 @@ class StartzeitErfassungFrame(ctk.CTkFrame):
         self.startdaten = pd.DataFrame(columns=list(self.anmeldedaten.columns) + ["Startzeit"])
         os.makedirs(TABELLEN_ORDNER, exist_ok=True)
         timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        self.filename = os.path.join(TABELLEN_ORDNER, f"Zeitmessung_Start_{timestamp}.csv")
+        # Datei für das Flachrennen
+        self.filename = os.path.join(
+            TABELLEN_ORDNER, f"Zeitmessung_Start_Flach_{timestamp}.csv"
+        )
         self.startdaten.to_csv(self.filename, index=False, sep=';', encoding="utf-8-sig")
 
         # GUI Elemente

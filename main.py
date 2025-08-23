@@ -4,8 +4,10 @@ import os
 
 from seiten.rfid_zuordnung import RFIDZuordnungFrame
 from seiten.anmeldung import anmeldungFrame
-from seiten.startzeit_erfassung import StartzeitErfassungFrame
-from seiten.zielzeit_erfassung import ZielzeitErfassungFrame
+from seiten.startzeit_flach import StartzeitFlachErfassungFrame
+from seiten.startzeit_berg import StartzeitBergErfassungFrame
+from seiten.zielzeit_flach import ZielzeitFlachErfassungFrame
+from seiten.zielzeit_berg import ZielzeitBergErfassungFrame
 from seiten.rangliste import RanglisteFrame
 from openpyxl.worksheet.header_footer import HeaderFooter
 
@@ -28,14 +30,16 @@ class VeloApp(ctk.CTk):
         # Sidebar
         self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=0)
         self.sidebar.grid(row=0, column=0, sticky="nswe")
-        self.sidebar.grid_rowconfigure(5, weight=1)
+        self.sidebar.grid_rowconfigure(7, weight=1)
 
         self.menu_buttons = {
             "RFID-Zuordnung": self.show_rfid,
             "Personenanmeldung": self.show_person,
-            "Startzeit": self.show_start,
-            "Zielzeit": self.show_ziel,
-            "Rangliste": self.show_rangliste
+            "Startzeit Flach": self.show_start_flach,
+            "Startzeit Berg": self.show_start_berg,
+            "Zielzeit Flach": self.show_ziel_flach,
+            "Zielzeit Berg": self.show_ziel_berg,
+            "Rangliste": self.show_rangliste,
         }
 
         self.menu_widgets = {}
@@ -67,16 +71,28 @@ class VeloApp(ctk.CTk):
         self.current_frame = anmeldungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-    def show_start(self):
+    def show_start_flach(self):
         self.sidebar.grid_remove()
         self.clear_content()
-        self.current_frame = StartzeitErfassungFrame(self.content)
+        self.current_frame = StartzeitFlachErfassungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
-    def show_ziel(self):
+    def show_start_berg(self):
         self.sidebar.grid_remove()
         self.clear_content()
-        self.current_frame = ZielzeitErfassungFrame(self.content)
+        self.current_frame = StartzeitBergErfassungFrame(self.content)
+        self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    def show_ziel_flach(self):
+        self.sidebar.grid_remove()
+        self.clear_content()
+        self.current_frame = ZielzeitFlachErfassungFrame(self.content)
+        self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+    def show_ziel_berg(self):
+        self.sidebar.grid_remove()
+        self.clear_content()
+        self.current_frame = ZielzeitBergErfassungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_rangliste(self):
