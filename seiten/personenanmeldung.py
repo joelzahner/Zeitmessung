@@ -4,7 +4,15 @@ import os
 from tkinter import messagebox
 
 CSV_PATH = os.path.join("Datenbank", "Anmeldung.csv")
-SPALTEN = ["Startnummer", "Vorname", "Nachname", "Jahrgang", "Wohnort"]
+SPALTEN = [
+    "Startnummer",
+    "Vorname",
+    "Nachname",
+    "Jahrgang",
+    "Wohnort",
+    "Geschlecht",
+    "Clubmitglied",
+]
 
 class PersonenanmeldungFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -27,7 +35,11 @@ class PersonenanmeldungFrame(ctk.CTkFrame):
 
     def lade_csv(self):
         if os.path.exists(CSV_PATH):
-            return pd.read_csv(CSV_PATH, sep=';', dtype=str, encoding="utf-8-sig")
+            df = pd.read_csv(CSV_PATH, sep=";", dtype=str, encoding="utf-8-sig")
+            for col in SPALTEN:
+                if col not in df.columns:
+                    df[col] = ""
+            return df[SPALTEN]
         return pd.DataFrame(columns=SPALTEN)
 
     def speichere_csv(self):
@@ -43,15 +55,31 @@ class PersonenanmeldungFrame(ctk.CTkFrame):
     def neue_person(self):
         popup = ctk.CTkToplevel(self)
         popup.title("Neue Person")
-        popup.geometry("400x300")
+        popup.geometry("400x350")
 
         eintraege = {}
         for i, feld in enumerate(SPALTEN):
             label = ctk.CTkLabel(popup, text=feld + ":")
             label.grid(row=i, column=0, padx=10, pady=5, sticky="e")
-            entry = ctk.CTkEntry(popup)
-            entry.grid(row=i, column=1, padx=10, pady=5)
-            eintraege[feld] = entry
+
+            if feld == "Geschlecht":
+                var = ctk.StringVar(value="")
+                rb_m = ctk.CTkRadioButton(popup, text="Männlich", variable=var, value="Männlich")
+                rb_m.grid(row=i, column=1, padx=10, pady=5, sticky="w")
+                rb_w = ctk.CTkRadioButton(popup, text="Weiblich", variable=var, value="Weiblich")
+                rb_w.grid(row=i, column=2, padx=10, pady=5, sticky="w")
+                eintraege[feld] = var
+            elif feld == "Clubmitglied":
+                var = ctk.StringVar(value="")
+                rb_ja = ctk.CTkRadioButton(popup, text="Ja", variable=var, value="Ja")
+                rb_ja.grid(row=i, column=1, padx=10, pady=5, sticky="w")
+                rb_nein = ctk.CTkRadioButton(popup, text="Nein", variable=var, value="Nein")
+                rb_nein.grid(row=i, column=2, padx=10, pady=5, sticky="w")
+                eintraege[feld] = var
+            else:
+                entry = ctk.CTkEntry(popup)
+                entry.grid(row=i, column=1, padx=10, pady=5, sticky="w")
+                eintraege[feld] = entry
 
         def speichern():
             werte = {feld: eintraege[feld].get().strip() for feld in SPALTEN}
