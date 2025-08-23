@@ -3,6 +3,7 @@ import pandas as pd
 import os
 from datetime import datetime, timedelta
 from tkinter import messagebox
+from openpyxl.worksheet.header_footer import HeaderFooter
 
 TABELLEN_ORDNER = "Datenbank"
 AUSGABE_DATEI = os.path.join(TABELLEN_ORDNER, "Rangliste.xlsx")
@@ -131,6 +132,15 @@ class RanglisteFrame(ctk.CTkFrame):
                 sheet = writer.sheets["Rangliste"]
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 startrow += len(df_kat) + 3
+
+            # Seitenlayout + Kopfzeile setzen
+            ws = writer.sheets["Rangliste"]
+            ws.sheet_view.view = "pageLayout"  # Seitenlayout
+
+            h = ws.oddHeader
+            h.left.text = "XX. Flachrennen"
+            h.left.size = 20
+
 
         text_output = ""
         for kat, df_kat in kategorien_dfs.items():

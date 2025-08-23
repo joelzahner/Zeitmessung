@@ -7,6 +7,7 @@ from seiten.personenanmeldung import PersonenanmeldungFrame
 from seiten.startzeit_erfassung import StartzeitErfassungFrame
 from seiten.zielzeit_erfassung import ZielzeitErfassungFrame
 from seiten.rangliste import RanglisteFrame
+from openpyxl.worksheet.header_footer import HeaderFooter
 
 
 # GUI-Initialisierung
