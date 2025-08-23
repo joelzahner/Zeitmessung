@@ -4,6 +4,8 @@ import os
 from datetime import datetime, timedelta
 from tkinter import messagebox
 from openpyxl.worksheet.header_footer import HeaderFooter
+from openpyxl.worksheet.page import PageMargins
+from openpyxl.styles import Alignment, Border
 
 TABELLEN_ORDNER = "Datenbank"
 AUSGABE_DATEI = os.path.join(TABELLEN_ORDNER, "Rangliste.xlsx")
@@ -142,8 +144,8 @@ class RanglisteFrame(ctk.CTkFrame):
                 if {"Rennzeit_flach", "Rennzeit_berg"}.issubset(df_kat.columns):
                     df_kat.rename(
                         columns={
-                            "Rennzeit_flach": "Rennzeit Flach",
-                            "Rennzeit_berg": "Rennzeit Berg",
+                            "Rennzeit_flach": "Zeit Flach",
+                            "Rennzeit_berg": "Zeit Berg",
                         },
                         inplace=True,
                     )
@@ -154,8 +156,8 @@ class RanglisteFrame(ctk.CTkFrame):
                             "Nachname",
                             "Jahrgang",
                             "Wohnort",
-                            "Rennzeit Flach",
-                            "Rennzeit Berg",
+                            "Zeit Flach",
+                            "Zeit Berg",
                             "Rennzeit",
                             "Rückstand",
                         ]
@@ -236,7 +238,9 @@ class RanglisteFrame(ctk.CTkFrame):
 
             startrow = 0
             for kat, df_kat in gesamt_kats.items():
-                df_kat.to_excel(writer, sheet_name="Gesamtwertung", startrow=startrow + 1, index=False)
+                df_kat.to_excel(
+                    writer, sheet_name="Gesamtwertung", startrow=startrow + 1, index=False
+                )
                 sheet = writer.sheets["Gesamtwertung"]
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 startrow += len(df_kat) + 3
@@ -244,6 +248,18 @@ class RanglisteFrame(ctk.CTkFrame):
             for name in ["Flachrennen", "Bergrennen", "Gesamtwertung"]:
                 ws = writer.sheets[name]
                 ws.sheet_view.view = "pageLayout"
+                ws.sheet_view.showGridLines = False
+                ws.print_options.gridLines = False
+                ws.page_margins = PageMargins(
+                    left=0.25, right=0.25, top=0.5, bottom=0.5, header=0.3, footer=0.3
+                )
+                ws.page_setup.fitToWidth = 1
+                ws.page_setup.fitToHeight = 0
+                ws.page_setup.paperSize = ws.PAPERSIZE_A4
+                for row in ws.iter_rows():
+                    for cell in row:
+                        cell.alignment = Alignment(horizontal="left")
+                        cell.border = Border()
                 h = ws.oddHeader
                 h.left.text = name
                 h.left.size = 20
