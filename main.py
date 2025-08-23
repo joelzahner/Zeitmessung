@@ -21,9 +21,9 @@ ctk.set_default_color_theme("blue")
 def show_splash(duration: int = 2000) -> None:
     splash = tk.Tk()
     splash.overrideredirect(True)
-    splash.iconbitmap("vcm.ico")
+    splash.iconbitmap("vcm_start.ico")
 
-    image = Image.open("vcm.ico")
+    image = Image.open("vcm_start.ico")
     photo = ImageTk.PhotoImage(image)
     label = tk.Label(splash, image=photo)
     label.image = photo
