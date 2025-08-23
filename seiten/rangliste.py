@@ -109,6 +109,16 @@ class RanglisteFrame(ctk.CTkFrame):
 
         merged["Kategorie"] = merged.apply(bestimme_kategorie, axis=1)
 
+        def zeit_in_hundertstel(zeit_str: str) -> int:
+            m, s, h = map(int, zeit_str.split(":"))
+            return (m * 60 + s) * 100 + h
+
+        def format_hundertstel(cs: int) -> str:
+            minuten = cs // 6000
+            sekunden = (cs % 6000) // 100
+            hundertstel = cs % 100
+            return f"{minuten:02}:{sekunden:02}:{hundertstel:02}"
+
         kategorien_dfs = {}
         for kat in KATEGORIEN_REIHENFOLGE:
             df_kat = merged[merged["Kategorie"] == kat].copy()
@@ -116,6 +126,10 @@ class RanglisteFrame(ctk.CTkFrame):
                 continue
             df_kat = df_kat.sort_values(by="Rennzeit_Sekunden").reset_index(drop=True)
             df_kat["Rang"] = df_kat.index + 1
+            basis = zeit_in_hundertstel(df_kat["Rennzeit"].iloc[0])
+            df_kat["Rückstand"] = df_kat["Rennzeit"].apply(
+                lambda z: format_hundertstel(zeit_in_hundertstel(z) - basis)
+            )
             df_kat.rename(
                 columns={
                     "Vorname_ziel": "Vorname",
@@ -127,6 +141,18 @@ class RanglisteFrame(ctk.CTkFrame):
             )
             df_kat["km/h"] = df_kat["km/h"].round(2)
             df_kat = df_kat[["Rang", "Vorname", "Nachname", "Jahrgang", "Wohnort", "Rennzeit", "km/h"]]
+
+            df_kat = df_kat[
+                [
+                    "Rang",
+                    "Vorname",
+                    "Nachname",
+                    "Jahrgang",
+                    "Wohnort",
+                    "Rennzeit",
+                    "Rückstand",
+                ]
+            ]
             kategorien_dfs[kat] = df_kat
 
         with pd.ExcelWriter(AUSGABE_DATEI, engine="openpyxl") as writer:
