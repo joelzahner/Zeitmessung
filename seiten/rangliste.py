@@ -140,8 +140,6 @@ class RanglisteFrame(ctk.CTkFrame):
                 inplace=True,
             )
             df_kat["km/h"] = df_kat["km/h"].round(2)
-            df_kat = df_kat[["Rang", "Vorname", "Nachname", "Jahrgang", "Wohnort", "Rennzeit", "km/h"]]
-
             df_kat = df_kat[
                 [
                     "Rang",
@@ -151,6 +149,7 @@ class RanglisteFrame(ctk.CTkFrame):
                     "Wohnort",
                     "Rennzeit",
                     "Rückstand",
+                    "km/h",
                 ]
             ]
             kategorien_dfs[kat] = df_kat

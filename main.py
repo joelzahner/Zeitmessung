@@ -3,7 +3,7 @@ from tkinter import ttk
 import os
 
 from seiten.rfid_zuordnung import RFIDZuordnungFrame
-from seiten.personenanmeldung import PersonenanmeldungFrame
+from seiten.anmeldung import anmeldungFrame
 from seiten.startzeit_erfassung import StartzeitErfassungFrame
 from seiten.zielzeit_erfassung import ZielzeitErfassungFrame
 from seiten.rangliste import RanglisteFrame
@@ -64,7 +64,7 @@ class VeloApp(ctk.CTk):
     def show_person(self):
         self.sidebar.grid_remove()
         self.clear_content()
-        self.current_frame = PersonenanmeldungFrame(self.content)
+        self.current_frame = anmeldungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_start(self):

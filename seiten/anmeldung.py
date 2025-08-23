@@ -14,7 +14,7 @@ SPALTEN = [
     "Clubmitglied",
 ]
 
-class PersonenanmeldungFrame(ctk.CTkFrame):
+class anmeldungFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.grid_columnconfigure(0, weight=1)
@@ -23,7 +23,7 @@ class PersonenanmeldungFrame(ctk.CTkFrame):
         os.makedirs("Datenbank", exist_ok=True)
         self.daten = self.lade_csv()
 
-        self.label = ctk.CTkLabel(self, text="Personenanmeldung", font=("Arial", 20))
+        self.label = ctk.CTkLabel(self, text="Anmeldung", font=("Arial", 20))
         self.label.grid(row=0, column=0, pady=10)
 
         self.tabelle = ctk.CTkTextbox(self, height=400)
