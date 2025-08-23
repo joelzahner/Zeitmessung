@@ -50,14 +50,16 @@ class VeloApp(ctk.CTk):
         self.iconbitmap("vcm.ico")
 
         # Layout-Konfiguration
-        self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(0, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
-        # Sidebar
-        self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=7)
-        self.sidebar.grid(row=0, column=0, sticky="nswe")
-        self.sidebar.grid_rowconfigure(7, weight=1)
+        # Content Frame
+        self.content = ctk.CTkFrame(self)
+        self.content.grid(row=0, column=0, sticky="nswe")
+        self.content.grid_rowconfigure(0, weight=1)
+        self.content.grid_columnconfigure(0, weight=1)
 
+        # Zentrales Menü
         self.menu_buttons = {
             "RFID-Zuordnung": self.show_rfid,
             "Anmeldung": self.show_person,
@@ -68,15 +70,13 @@ class VeloApp(ctk.CTk):
             "Rangliste": self.show_rangliste,
         }
 
-        self.menu_widgets = {}
-        for i, (label, func) in enumerate(self.menu_buttons.items(), start=0):
-            btn = ctk.CTkButton(self.sidebar, text=label, command=func)
-            btn.grid(row=i, column=0, padx=10, pady=5, sticky="ew")
-            self.menu_widgets[label] = btn
+        self.menu_frame = ctk.CTkFrame(self.content)
+        self.menu_frame.pack(expand=True)
+        self.menu_frame.grid_columnconfigure((0, 1), weight=1)
 
-        # Content Frame
-        self.content = ctk.CTkFrame(self)
-        self.content.grid(row=0, column=1, sticky="nswe")
+        for i, (label, func) in enumerate(self.menu_buttons.items()):
+            btn = ctk.CTkButton(self.menu_frame, text=label, command=func, height=60)
+            btn.grid(row=i // 2, column=i % 2, padx=10, pady=10, sticky="nsew")
 
         self.current_frame = None
 
@@ -86,43 +86,43 @@ class VeloApp(ctk.CTk):
 
     # Platzhalterfunktionen für jede Seite
     def show_rfid(self):
-        self.sidebar.grid_remove()
+        self.menu_frame.pack_forget()
         self.clear_content()
         self.current_frame = RFIDZuordnungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_person(self):
-        self.sidebar.grid_remove()
+        self.menu_frame.pack_forget()
         self.clear_content()
         self.current_frame = anmeldungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_start_flach(self):
-        self.sidebar.grid_remove()
+        self.menu_frame.pack_forget()
         self.clear_content()
         self.current_frame = StartzeitFlachErfassungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_start_berg(self):
-        self.sidebar.grid_remove()
+        self.menu_frame.pack_forget()
         self.clear_content()
         self.current_frame = StartzeitBergErfassungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_ziel_flach(self):
-        self.sidebar.grid_remove()
+        self.menu_frame.pack_forget()
         self.clear_content()
         self.current_frame = ZielzeitFlachErfassungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_ziel_berg(self):
-        self.sidebar.grid_remove()
+        self.menu_frame.pack_forget()
         self.clear_content()
         self.current_frame = ZielzeitBergErfassungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_rangliste(self):
-        self.sidebar.grid_remove()
+        self.menu_frame.pack_forget()
         self.clear_content()
         self.current_frame = RanglisteFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
