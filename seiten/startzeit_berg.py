@@ -14,28 +14,45 @@ class StartzeitBergErfassungFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
 
         self.anmeldedaten = self.lade_anmeldedaten()
-        self.index = 0
 
-        self.startdaten = pd.DataFrame(columns=list(self.anmeldedaten.columns) + ["Startzeit"])
+        # DataFrame zum Speichern der Startzeiten
+        self.startdaten = pd.DataFrame(
+            columns=list(self.anmeldedaten.columns) + ["Startzeit"]
+        )
         os.makedirs(TABELLEN_ORDNER, exist_ok=True)
         timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        # Datei für das Bergrennen
         self.filename = os.path.join(
             TABELLEN_ORDNER, f"Zeitmessung_Start_Berg_{timestamp}.csv"
         )
-        self.startdaten.to_csv(self.filename, index=False, sep=';', encoding="utf-8-sig")
+        self.startdaten.to_csv(self.filename, index=False, sep=";", encoding="utf-8-sig")
 
         # GUI Elemente
-        self.label = ctk.CTkLabel(self, text="", font=("Arial", 20))
-        self.label.pack(pady=20)
+        self.entry_label = ctk.CTkLabel(self, text="Startnummern (Komma getrennt)")
+        self.entry_label.pack(pady=10)
 
-        self.start_button = ctk.CTkButton(self, text="Start!", command=self.schreibe_startzeit, height=100, width=300)
+        self.entry = ctk.CTkEntry(self, width=300)
+        self.entry.pack(pady=10)
+
+        # Buttons zum Bestätigen und Starten
+        self.confirm_button = ctk.CTkButton(
+            self, text="Nummern bestätigen", command=self.bestaetige_nummern
+        )
+        self.confirm_button.pack(pady=10)
+
+        self.start_button = ctk.CTkButton(
+            self,
+            text="Start!",
+            command=self.schreibe_startzeit,
+            height=100,
+            width=300,
+            state=ctk.DISABLED,
+        )
         self.start_button.pack(pady=10)
 
-        self.vorschau_label = ctk.CTkLabel(self, text="", font=("Arial", 16), text_color="gray")
-        self.vorschau_label.pack(pady=10)
+        self.info_label = ctk.CTkLabel(self, text="", font=("Arial", 16))
+        self.info_label.pack(pady=10)
 
-        self.zeige_naechste_person()
+        self.bestaetigte_nummern = None
 
     def lade_anmeldedaten(self):
         if not os.path.exists(ANMELDUNG_PATH):
@@ -43,30 +60,58 @@ class StartzeitBergErfassungFrame(ctk.CTkFrame):
             return pd.DataFrame(columns=["Startnummer", "Vorname", "Nachname", "Jahrgang", "Wohnort"])
         return pd.read_csv(ANMELDUNG_PATH, sep=';', dtype=str, encoding="utf-8-sig")
 
-    def zeige_naechste_person(self):
-        if self.index < len(self.anmeldedaten):
-            daten = self.anmeldedaten.iloc[self.index]
-            text = "\n".join([f"{col}: {daten[col]}" for col in self.anmeldedaten.columns])
-            self.label.configure(text=text)
+    def bestaetige_nummern(self):
+        startnummern_text = self.entry.get().strip()
+        if not startnummern_text:
+            messagebox.showerror("Fehler", "Bitte Startnummern eingeben.")
+            return
 
-            # Vorschau
-            vorschau = []
-            for i in range(1, 3):
-                if self.index + i < len(self.anmeldedaten):
-                    person = self.anmeldedaten.iloc[self.index + i]
-                    vorschau.append(f"{person['Vorname']} {person['Nachname']}")
-            self.vorschau_label.configure(text="Als Nächstes:\n" + "\n".join(vorschau) if vorschau else "")
+        raw_nums = [s.strip() for s in startnummern_text.replace(";", ",").split(",")]
+        startnummern = [n for n in raw_nums if n]
+
+        bereits_gestartet = []
+        nicht_gefunden = []
+        for nummer in startnummern:
+            if nummer in self.startdaten["Startnummer"].astype(str).values:
+                bereits_gestartet.append(nummer)
+            elif self.anmeldedaten[self.anmeldedaten["Startnummer"] == nummer].empty:
+                nicht_gefunden.append(nummer)
+
+        if bereits_gestartet or nicht_gefunden:
+            meldung = []
+            if nicht_gefunden:
+                meldung.append("Nicht gefunden: " + ", ".join(nicht_gefunden))
+            if bereits_gestartet:
+                meldung.append("Bereits gestartet: " + ", ".join(bereits_gestartet))
+            messagebox.showerror("Fehler", "\n".join(meldung))
+            self.start_button.configure(state=ctk.DISABLED)
+            self.bestaetigte_nummern = None
         else:
-            self.label.configure(text="Alle Personen wurden gestartet.")
-            self.vorschau_label.configure(text="")
-            self.start_button.configure(state="disabled")
+            self.bestaetigte_nummern = startnummern
+            self.start_button.configure(state=ctk.NORMAL)
+            self.entry.configure(state=ctk.DISABLED)
 
     def schreibe_startzeit(self):
-        if self.index < len(self.anmeldedaten):
-            now = datetime.now().strftime("%H:%M:%S.%f")[:-4]  # Zeit auf Hundertstel
-            daten = self.anmeldedaten.iloc[self.index].to_dict()
-            daten["Startzeit"] = now
-            self.startdaten.loc[len(self.startdaten)] = daten
-            self.startdaten.to_csv(self.filename, index=False, sep=';', encoding="utf-8-sig")
-            self.index += 1
-            self.zeige_naechste_person()
+        if not self.bestaetigte_nummern:
+            messagebox.showerror("Fehler", "Bitte Startnummern bestätigen.")
+            return
+
+        now = datetime.now().strftime("%H:%M:%S.%f")[:-4]
+
+        gestartete = []
+        for nummer in self.bestaetigte_nummern:
+            person = self.anmeldedaten[self.anmeldedaten["Startnummer"] == nummer]
+            if not person.empty:
+                daten = person.iloc[0].to_dict()
+                daten["Startzeit"] = now
+                self.startdaten.loc[len(self.startdaten)] = daten
+                gestartete.append(f"{nummer} {daten['Vorname']} {daten['Nachname']}")
+
+        self.startdaten.to_csv(self.filename, index=False, sep=";", encoding="utf-8-sig")
+        self.entry.configure(state=ctk.NORMAL)
+        self.entry.delete(0, ctk.END)
+        self.start_button.configure(state=ctk.DISABLED)
+        self.bestaetigte_nummern = None
+
+        info = "Gestartet:\n" + "\n".join(gestartete) if gestartete else ""
+        self.info_label.configure(text=info)
