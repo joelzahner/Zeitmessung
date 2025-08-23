@@ -52,12 +52,83 @@ class RanglisteFrame(ctk.CTkFrame):
 
         merged["Rennzeit"] = merged.apply(berechne_zeit_formatiert, axis=1)
         merged = merged.dropna(subset=["Rennzeit"])
-        merged = merged.sort_values(by="Rennzeit").reset_index(drop=True)
-        merged["Rang"] = merged.index + 1
 
-        rangliste = merged[["Rang", "Vorname_ziel", "Nachname_ziel", "Jahrgang_ziel", "Wohnort_ziel", "Rennzeit"]]
-        rangliste.columns = ["Rang", "Vorname", "Nachname", "Jahrgang", "Wohnort", "Rennzeit"]
+        current_year = datetime.now().year
+        junior_year = current_year - 15
+        nachwuchs_year = current_year - 12
+
+        merged["Jahrgang"] = pd.to_numeric(merged.get("Jahrgang_start"), errors="coerce")
+        merged["Geschlecht"] = merged.get("Geschlecht_start")
+        merged["Clubmitglied"] = merged.get("Clubmitglied_start")
+
+        def bestimme_kategorie(row):
+            jahrgang = row["Jahrgang"]
+            geschlecht = row["Geschlecht"]
+            club = row["Clubmitglied"]
+            if club != "Ja":
+                return "Gäste Herren" if geschlecht == "Männlich" else "Gäste Damen"
+            if geschlecht == "Männlich":
+                if jahrgang == junior_year:
+                    return "Junioren"
+                if jahrgang == nachwuchs_year:
+                    return "Nachwuchs Knaben"
+                return "Herren"
+            else:
+                if jahrgang == junior_year:
+                    return "Juniorinnen"
+                if jahrgang == nachwuchs_year:
+                    return "Nachwuchs Mädchen"
+                return "Damen"
+
+        merged["Kategorie"] = merged.apply(bestimme_kategorie, axis=1)
+
+        kategorie_order = [
+            "Herren",
+            "Junioren",
+            "Nachwuchs Knaben",
+            "Gäste Herren",
+            "Damen",
+            "Juniorinnen",
+            "Nachwuchs Mädchen",
+            "Gäste Damen",
+        ]
+
+        merged["Kategorie"] = pd.Categorical(
+            merged["Kategorie"], categories=kategorie_order, ordered=True
+        )
+        merged = merged.sort_values(["Kategorie", "Rennzeit"])
+        merged["Rang"] = merged.groupby("Kategorie").cumcount() + 1
+
+        rangliste = merged[
+            [
+                "Kategorie",
+                "Rang",
+                "Vorname_ziel",
+                "Nachname_ziel",
+                "Jahrgang",
+                "Wohnort_ziel",
+                "Rennzeit",
+            ]
+        ]
+        rangliste.columns = [
+            "Kategorie",
+            "Rang",
+            "Vorname",
+            "Nachname",
+            "Jahrgang",
+            "Wohnort",
+            "Rennzeit",
+        ]
 
         rangliste.to_csv(AUSGABE_DATEI, sep=';', index=False, encoding="utf-8-sig")
         self.anzeige.delete("1.0", "end")
-        self.anzeige.insert("1.0", rangliste.to_string(index=False))
+        anzeige_text = ""
+        for kat in kategorie_order:
+            df_kat = rangliste[rangliste["Kategorie"] == kat]
+            if df_kat.empty:
+                continue
+            anzeige_text += f"{kat}\n"
+            anzeige_text += (
+                df_kat.drop(columns=["Kategorie"]).to_string(index=False) + "\n\n"
+            )
+        self.anzeige.insert("1.0", anzeige_text.strip())
