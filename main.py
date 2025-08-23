@@ -27,10 +27,7 @@ class VeloApp(ctk.CTk):
         # Sidebar
         self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=0)
         self.sidebar.grid(row=0, column=0, sticky="nswe")
-        self.sidebar.grid_rowconfigure(6, weight=1)
-
-        self.toggle_button = ctk.CTkButton(self.sidebar, text="☰", command=self.toggle_sidebar)
-        self.toggle_button.grid(row=0, column=0, padx=10, pady=10)
+        self.sidebar.grid_rowconfigure(5, weight=1)
 
         self.menu_buttons = {
             "RFID-Zuordnung": self.show_rfid,
@@ -41,7 +38,7 @@ class VeloApp(ctk.CTk):
         }
 
         self.menu_widgets = {}
-        for i, (label, func) in enumerate(self.menu_buttons.items(), start=1):
+        for i, (label, func) in enumerate(self.menu_buttons.items(), start=0):
             btn = ctk.CTkButton(self.sidebar, text=label, command=func)
             btn.grid(row=i, column=0, padx=10, pady=5, sticky="ew")
             self.menu_widgets[label] = btn
@@ -52,38 +49,37 @@ class VeloApp(ctk.CTk):
 
         self.current_frame = None
 
-    def toggle_sidebar(self):
-        if self.sidebar.winfo_ismapped():
-            self.sidebar.grid_remove()
-        else:
-            self.sidebar.grid()
-
     def clear_content(self):
         if self.current_frame:
             self.current_frame.destroy()
 
     # Platzhalterfunktionen für jede Seite
     def show_rfid(self):
+        self.sidebar.grid_remove()
         self.clear_content()
         self.current_frame = RFIDZuordnungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_person(self):
+        self.sidebar.grid_remove()
         self.clear_content()
         self.current_frame = PersonenanmeldungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_start(self):
+        self.sidebar.grid_remove()
         self.clear_content()
         self.current_frame = StartzeitErfassungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_ziel(self):
+        self.sidebar.grid_remove()
         self.clear_content()
         self.current_frame = ZielzeitErfassungFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
 
     def show_rangliste(self):
+        self.sidebar.grid_remove()
         self.clear_content()
         self.current_frame = RanglisteFrame(self.content)
         self.current_frame.pack(fill="both", expand=True, padx=20, pady=20)
