@@ -7,6 +7,7 @@ from openpyxl.worksheet.header_footer import HeaderFooter
 from openpyxl.worksheet.page import PageMargins
 from openpyxl.styles import Alignment, Border, Side
 from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font
 
 TABELLEN_ORDNER = "Datenbank"
 AUSGABE_DATEI = os.path.join(TABELLEN_ORDNER, "Rangliste.xlsx")
@@ -245,8 +246,12 @@ class RanglisteFrame(ctk.CTkFrame):
                     end_row=startrow + 1,
                     end_column=df_kat.shape[1],
                 )
+                sheet.cell(row=startrow + 1, column=1).font = Font(bold=True)
                 for col in range(1, df_kat.shape[1] + 1):
                     sheet.cell(row=startrow + 1, column=col).border = Border(
+                        bottom=Side(style="thick")
+                    )
+                    sheet.cell(row=startrow + 2, column=col).border = Border(
                         bottom=Side(style="thick")
                     )
                 startrow += len(df_kat) + 3
@@ -263,8 +268,12 @@ class RanglisteFrame(ctk.CTkFrame):
                     end_row=startrow + 1,
                     end_column=df_kat.shape[1],
                 )
+                sheet.cell(row=startrow + 1, column=1).font = Font(bold=True)
                 for col in range(1, df_kat.shape[1] + 1):
                     sheet.cell(row=startrow + 1, column=col).border = Border(
+                        bottom=Side(style="thick")
+                    )
+                    sheet.cell(row=startrow + 2, column=col).border = Border(
                         bottom=Side(style="thick")
                     )
                 startrow += len(df_kat) + 3
@@ -283,8 +292,12 @@ class RanglisteFrame(ctk.CTkFrame):
                     end_row=startrow + 1,
                     end_column=df_kat.shape[1],
                 )
+                sheet.cell(row=startrow + 1, column=1).font = Font(bold=True)
                 for col in range(1, df_kat.shape[1] + 1):
                     sheet.cell(row=startrow + 1, column=col).border = Border(
+                        bottom=Side(style="thick")
+                    )
+                    sheet.cell(row=startrow + 2, column=col).border = Border(
                         bottom=Side(style="thick")
                     )
                 startrow += len(df_kat) + 3
