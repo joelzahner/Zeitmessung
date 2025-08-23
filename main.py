@@ -18,7 +18,7 @@ from openpyxl.worksheet.header_footer import HeaderFooter
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
-def show_splash(duration: int = 3000) -> None:
+def show_splash(duration: int = 2000) -> None:
     splash = tk.Tk()
     splash.overrideredirect(True)
     splash.iconbitmap("vcm.ico")
@@ -27,7 +27,7 @@ def show_splash(duration: int = 3000) -> None:
     photo = ImageTk.PhotoImage(image)
     label = tk.Label(splash, image=photo)
     label.image = photo
-    label.pack(padx=20, pady=10)
+    label.pack(padx=0, pady=0)
 
     text = tk.Label(splash, text="developed by Joel Zahner 2025", font=("Arial", 10))
     text.pack()
