@@ -22,6 +22,15 @@ class ZielzeitBergErfassungFrame(ctk.CTkFrame):
         self.tag_mapping = self.lade_tag_mapping()
         self.personen_df = self.lade_personen()
 
+        # Spaltenbreiten für eine übersichtliche Anzeige berechnen
+        if self.personen_df.empty:
+            self.spaltenbreiten = {"Startnummer": len("Startnummer"), "Vorname": len("Vorname"), "Nachname": len("Nachname")}
+        else:
+            self.spaltenbreiten = {
+                col: max(self.personen_df[col].astype(str).map(len).max(), len(col))
+                for col in ["Startnummer", "Vorname", "Nachname"]
+            }
+
         self.data = pd.DataFrame(
             columns=["Startnummer", "Vorname", "Nachname", "Jahrgang", "Wohnort", "Datum", "Zielzeit"]
         )
@@ -123,7 +132,12 @@ class ZielzeitBergErfassungFrame(ctk.CTkFrame):
                             self.data.to_csv(self.filename, index=False, sep=';', encoding="utf-8-sig")
 
                             self.gelesene_tags.add(tag)
-                            self.anzeige.insert("end", f"{daten[0]} | {daten[1]} {daten[2]} → {time_str}\n")
+                            self.anzeige.insert(
+                                "end",
+                                f"{daten[0]:<{self.spaltenbreiten['Startnummer']}} "
+                                f"{daten[1]:<{self.spaltenbreiten['Vorname']}} "
+                                f"{daten[2]:<{self.spaltenbreiten['Nachname']}} {time_str}\n",
+                            )
                             self.anzeige.see("end")
                             winsound.Beep(2000, 200)
         except serial.SerialException as e:

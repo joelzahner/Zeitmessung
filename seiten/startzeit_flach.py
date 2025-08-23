@@ -16,6 +16,9 @@ class StartzeitFlachErfassungFrame(ctk.CTkFrame):
         self.anmeldedaten = self.lade_anmeldedaten()
         self.index = 0
 
+        # Breite der Spalten für eine bessere Darstellung berechnen
+        self.spalten_breite = max(len(col) for col in self.anmeldedaten.columns)
+
         self.startdaten = pd.DataFrame(columns=list(self.anmeldedaten.columns) + ["Startzeit"])
         os.makedirs(TABELLEN_ORDNER, exist_ok=True)
         timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
@@ -46,7 +49,12 @@ class StartzeitFlachErfassungFrame(ctk.CTkFrame):
     def zeige_naechste_person(self):
         if self.index < len(self.anmeldedaten):
             daten = self.anmeldedaten.iloc[self.index]
-            text = "\n".join([f"{col}: {daten[col]}" for col in self.anmeldedaten.columns])
+            text = "\n".join(
+                [
+                    f"{col:<{self.spalten_breite}}: {daten[col]}"
+                    for col in self.anmeldedaten.columns
+                ]
+            )
             self.label.configure(text=text)
 
             # Vorschau
@@ -57,7 +65,7 @@ class StartzeitFlachErfassungFrame(ctk.CTkFrame):
                     vorschau.append(f"{person['Vorname']} {person['Nachname']}")
             self.vorschau_label.configure(text="Als Nächstes:\n" + "\n".join(vorschau) if vorschau else "")
         else:
-            self.label.configure(text="Alle Personen wurden gestartet.")
+            self.label.configure(text="Alle Personen sind gestartet.")
             self.vorschau_label.configure(text="")
             self.start_button.configure(state="disabled")
 

@@ -105,7 +105,7 @@ class StartzeitBergErfassungFrame(ctk.CTkFrame):
                 daten = person.iloc[0].to_dict()
                 daten["Startzeit"] = now
                 self.startdaten.loc[len(self.startdaten)] = daten
-                gestartete.append(f"{nummer} {daten['Vorname']} {daten['Nachname']}")
+                gestartete.append((nummer, daten["Vorname"], daten["Nachname"]))
 
         self.startdaten.to_csv(self.filename, index=False, sep=";", encoding="utf-8-sig")
         self.entry.configure(state=ctk.NORMAL)
@@ -113,5 +113,13 @@ class StartzeitBergErfassungFrame(ctk.CTkFrame):
         self.start_button.configure(state=ctk.DISABLED)
         self.bestaetigte_nummern = None
 
-        info = "Gestartet:\n" + "\n".join(gestartete) if gestartete else ""
+        if gestartete:
+            spaltenbreiten = [max(len(str(row[i])) for row in gestartete) for i in range(3)]
+            zeilen = [
+                f"{nr:<{spaltenbreiten[0]}} {vn:<{spaltenbreiten[1]}} {nn:<{spaltenbreiten[2]}}"
+                for nr, vn, nn in gestartete
+            ]
+            info = "Gestartet:\n" + "\n".join(zeilen)
+        else:
+            info = ""
         self.info_label.configure(text=info)
