@@ -90,7 +90,7 @@ class RanglisteFrame(ctk.CTkFrame):
             except ValueError:
                 jahrgang = 0
 
-            if club != "Ja":
+            if club != "Ja" and jahrgang < junior_jahrgang:
                 return "Gäste Herren" if geschlecht == "Männlich" else "Gäste Damen"
 
             if geschlecht == "Männlich":
@@ -200,26 +200,26 @@ class RanglisteFrame(ctk.CTkFrame):
         with pd.ExcelWriter(AUSGABE_DATEI, engine="openpyxl") as writer:
             startrow = 0
             for kat, df_kat in flach_kats.items():
-                df_kat.to_excel(writer, sheet_name="Flach", startrow=startrow + 1, index=False)
-                sheet = writer.sheets["Flach"]
+                df_kat.to_excel(writer, sheet_name="Flachrennen", startrow=startrow + 1, index=False)
+                sheet = writer.sheets["Flachrennen"]
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 startrow += len(df_kat) + 3
 
             startrow = 0
             for kat, df_kat in berg_kats.items():
-                df_kat.to_excel(writer, sheet_name="Berg", startrow=startrow + 1, index=False)
-                sheet = writer.sheets["Berg"]
+                df_kat.to_excel(writer, sheet_name="Bergrennen", startrow=startrow + 1, index=False)
+                sheet = writer.sheets["Bergrennen"]
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 startrow += len(df_kat) + 3
 
             startrow = 0
             for kat, df_kat in gesamt_kats.items():
-                df_kat.to_excel(writer, sheet_name="Gesamt", startrow=startrow + 1, index=False)
-                sheet = writer.sheets["Gesamt"]
+                df_kat.to_excel(writer, sheet_name="Gesamtwertung", startrow=startrow + 1, index=False)
+                sheet = writer.sheets["Gesamtwertung"]
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 startrow += len(df_kat) + 3
 
-            for name in ["Flach", "Berg", "Gesamt"]:
+            for name in ["Flachrennen", "Bergrennen", "Gesamtwertung"]:
                 ws = writer.sheets[name]
                 ws.sheet_view.view = "pageLayout"
                 h = ws.oddHeader
