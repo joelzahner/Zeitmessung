@@ -14,28 +14,32 @@ class StartzeitBergErfassungFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
 
         self.anmeldedaten = self.lade_anmeldedaten()
-        self.index = 0
 
-        self.startdaten = pd.DataFrame(columns=list(self.anmeldedaten.columns) + ["Startzeit"])
+        # DataFrame zum Speichern der Startzeiten
+        self.startdaten = pd.DataFrame(
+            columns=list(self.anmeldedaten.columns) + ["Startzeit"]
+        )
         os.makedirs(TABELLEN_ORDNER, exist_ok=True)
         timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        # Datei für das Bergrennen
         self.filename = os.path.join(
             TABELLEN_ORDNER, f"Zeitmessung_Start_Berg_{timestamp}.csv"
         )
-        self.startdaten.to_csv(self.filename, index=False, sep=';', encoding="utf-8-sig")
+        self.startdaten.to_csv(self.filename, index=False, sep=";", encoding="utf-8-sig")
 
         # GUI Elemente
-        self.label = ctk.CTkLabel(self, text="", font=("Arial", 20))
-        self.label.pack(pady=20)
+        self.entry_label = ctk.CTkLabel(self, text="Startnummern (Komma getrennt)")
+        self.entry_label.pack(pady=10)
 
-        self.start_button = ctk.CTkButton(self, text="Start!", command=self.schreibe_startzeit, height=100, width=300)
+        self.entry = ctk.CTkEntry(self, width=300)
+        self.entry.pack(pady=10)
+
+        self.start_button = ctk.CTkButton(
+            self, text="Start!", command=self.schreibe_startzeit, height=100, width=300
+        )
         self.start_button.pack(pady=10)
 
-        self.vorschau_label = ctk.CTkLabel(self, text="", font=("Arial", 16), text_color="gray")
-        self.vorschau_label.pack(pady=10)
-
-        self.zeige_naechste_person()
+        self.info_label = ctk.CTkLabel(self, text="", font=("Arial", 16))
+        self.info_label.pack(pady=10)
 
     def lade_anmeldedaten(self):
         if not os.path.exists(ANMELDUNG_PATH):
@@ -43,30 +47,33 @@ class StartzeitBergErfassungFrame(ctk.CTkFrame):
             return pd.DataFrame(columns=["Startnummer", "Vorname", "Nachname", "Jahrgang", "Wohnort"])
         return pd.read_csv(ANMELDUNG_PATH, sep=';', dtype=str, encoding="utf-8-sig")
 
-    def zeige_naechste_person(self):
-        if self.index < len(self.anmeldedaten):
-            daten = self.anmeldedaten.iloc[self.index]
-            text = "\n".join([f"{col}: {daten[col]}" for col in self.anmeldedaten.columns])
-            self.label.configure(text=text)
-
-            # Vorschau
-            vorschau = []
-            for i in range(1, 3):
-                if self.index + i < len(self.anmeldedaten):
-                    person = self.anmeldedaten.iloc[self.index + i]
-                    vorschau.append(f"{person['Vorname']} {person['Nachname']}")
-            self.vorschau_label.configure(text="Als Nächstes:\n" + "\n".join(vorschau) if vorschau else "")
-        else:
-            self.label.configure(text="Alle Personen wurden gestartet.")
-            self.vorschau_label.configure(text="")
-            self.start_button.configure(state="disabled")
-
     def schreibe_startzeit(self):
-        if self.index < len(self.anmeldedaten):
-            now = datetime.now().strftime("%H:%M:%S.%f")[:-4]  # Zeit auf Hundertstel
-            daten = self.anmeldedaten.iloc[self.index].to_dict()
-            daten["Startzeit"] = now
-            self.startdaten.loc[len(self.startdaten)] = daten
-            self.startdaten.to_csv(self.filename, index=False, sep=';', encoding="utf-8-sig")
-            self.index += 1
-            self.zeige_naechste_person()
+        startnummern_text = self.entry.get().strip()
+        if not startnummern_text:
+            messagebox.showerror("Fehler", "Bitte Startnummern eingeben.")
+            return
+
+        # Startnummern parsen (Komma oder Leerzeichen getrennt)
+        raw_nums = [s.strip() for s in startnummern_text.replace(";", ",").split(",")]
+        startnummern = [n for n in raw_nums if n]
+        now = datetime.now().strftime("%H:%M:%S.%f")[:-4]
+
+        gestartete = []
+        nicht_gefunden = []
+        for nummer in startnummern:
+            person = self.anmeldedaten[self.anmeldedaten["Startnummer"] == nummer]
+            if not person.empty:
+                daten = person.iloc[0].to_dict()
+                daten["Startzeit"] = now
+                self.startdaten.loc[len(self.startdaten)] = daten
+                gestartete.append(f"{nummer} {daten['Vorname']} {daten['Nachname']}")
+            else:
+                nicht_gefunden.append(nummer)
+
+        self.startdaten.to_csv(self.filename, index=False, sep=";", encoding="utf-8-sig")
+        self.entry.delete(0, ctk.END)
+
+        info = "Gestartet:\n" + "\n".join(gestartete) if gestartete else ""
+        if nicht_gefunden:
+            info += ("\nNicht gefunden: " + ", ".join(nicht_gefunden))
+        self.info_label.configure(text=info)
