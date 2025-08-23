@@ -232,7 +232,6 @@ class RanglisteFrame(ctk.CTkFrame):
             for kat, df_kat in flach_kats.items():
                 df_kat.to_excel(writer, sheet_name="Flachrennen", startrow=startrow + 1, index=False)
                 sheet = writer.sheets["Flachrennen"]
-                sheet.insert_rows(startrow + 1)
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 sheet.merge_cells(
                     start_row=startrow + 1,
@@ -250,7 +249,6 @@ class RanglisteFrame(ctk.CTkFrame):
             for kat, df_kat in berg_kats.items():
                 df_kat.to_excel(writer, sheet_name="Bergrennen", startrow=startrow + 1, index=False)
                 sheet = writer.sheets["Bergrennen"]
-                sheet.insert_rows(startrow + 1)
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 sheet.merge_cells(
                     start_row=startrow + 1,
@@ -270,7 +268,6 @@ class RanglisteFrame(ctk.CTkFrame):
                     writer, sheet_name="Gesamtwertung", startrow=startrow + 1, index=False
                 )
                 sheet = writer.sheets["Gesamtwertung"]
-                sheet.insert_rows(startrow + 1)
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 sheet.merge_cells(
                     start_row=startrow + 1,
