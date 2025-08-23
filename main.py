@@ -1,5 +1,7 @@
 import customtkinter as ctk
 from tkinter import ttk
+import tkinter as tk
+from PIL import Image, ImageTk
 import os
 
 from seiten.rfid_zuordnung import RFIDZuordnungFrame
@@ -15,6 +17,30 @@ from openpyxl.worksheet.header_footer import HeaderFooter
 # GUI-Initialisierung
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
+
+def show_splash(duration: int = 3000) -> None:
+    splash = tk.Tk()
+    splash.overrideredirect(True)
+    splash.iconbitmap("vcm.ico")
+
+    image = Image.open("vcm.ico")
+    photo = ImageTk.PhotoImage(image)
+    label = tk.Label(splash, image=photo)
+    label.image = photo
+    label.pack(padx=20, pady=10)
+
+    text = tk.Label(splash, text="developed by Joel Zahner 2025", font=("Arial", 10))
+    text.pack()
+
+    splash.update_idletasks()
+    width = splash.winfo_width()
+    height = splash.winfo_height()
+    x = (splash.winfo_screenwidth() // 2) - (width // 2)
+    y = (splash.winfo_screenheight() // 2) - (height // 2)
+    splash.geometry(f"+{x}+{y}")
+
+    splash.after(duration, splash.destroy)
+    splash.mainloop()
 
 class VeloApp(ctk.CTk):
     def __init__(self):
@@ -103,5 +129,6 @@ class VeloApp(ctk.CTk):
 
 
 if __name__ == "__main__":
+    show_splash()
     app = VeloApp()
     app.mainloop()
