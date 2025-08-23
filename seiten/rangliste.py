@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 from tkinter import messagebox
 from openpyxl.worksheet.header_footer import HeaderFooter
 from openpyxl.worksheet.page import PageMargins
-from openpyxl.styles import Alignment, Border
+from openpyxl.styles import Alignment, Border, Side
+from openpyxl.utils import get_column_letter
 
 TABELLEN_ORDNER = "Datenbank"
 AUSGABE_DATEI = os.path.join(TABELLEN_ORDNER, "Rangliste.xlsx")
@@ -21,6 +22,11 @@ KATEGORIEN_REIHENFOLGE = [
     "Gäste Herren",
     "Gäste Damen",
 ]
+
+
+def px_to_width(px: int) -> float:
+    """Approximate conversion from pixels to Excel column width."""
+    return round((px - 5) / 7, 2)
 
 class RanglisteFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -227,6 +233,9 @@ class RanglisteFrame(ctk.CTkFrame):
                 df_kat.to_excel(writer, sheet_name="Flachrennen", startrow=startrow + 1, index=False)
                 sheet = writer.sheets["Flachrennen"]
                 sheet.cell(row=startrow + 1, column=1, value=kat)
+                for col in range(1, df_kat.shape[1] + 1):
+                    cell = sheet.cell(row=startrow + 1, column=col)
+                    cell.border = Border(bottom=Side(style="thick"))
                 startrow += len(df_kat) + 3
 
             startrow = 0
@@ -234,6 +243,9 @@ class RanglisteFrame(ctk.CTkFrame):
                 df_kat.to_excel(writer, sheet_name="Bergrennen", startrow=startrow + 1, index=False)
                 sheet = writer.sheets["Bergrennen"]
                 sheet.cell(row=startrow + 1, column=1, value=kat)
+                for col in range(1, df_kat.shape[1] + 1):
+                    cell = sheet.cell(row=startrow + 1, column=col)
+                    cell.border = Border(bottom=Side(style="thick"))
                 startrow += len(df_kat) + 3
 
             startrow = 0
@@ -243,6 +255,9 @@ class RanglisteFrame(ctk.CTkFrame):
                 )
                 sheet = writer.sheets["Gesamtwertung"]
                 sheet.cell(row=startrow + 1, column=1, value=kat)
+                for col in range(1, df_kat.shape[1] + 1):
+                    cell = sheet.cell(row=startrow + 1, column=col)
+                    cell.border = Border(bottom=Side(style="thick"))
                 startrow += len(df_kat) + 3
 
             for name in ["Flachrennen", "Bergrennen", "Gesamtwertung"]:
@@ -259,7 +274,14 @@ class RanglisteFrame(ctk.CTkFrame):
                 for row in ws.iter_rows():
                     for cell in row:
                         cell.alignment = Alignment(horizontal="left")
-                        cell.border = Border()
+                widths = []
+                if name in ["Flachrennen", "Bergrennen"]:
+                    widths = [84, 125, 125, 110, 110, 120, 120, 130]
+                elif name == "Gesamtwertung":
+                    widths = [65, 125, 125, 85, 85, 110, 110, 110, 105]
+                if widths:
+                    for idx, px in enumerate(widths, 1):
+                        ws.column_dimensions[get_column_letter(idx)].width = px_to_width(px)
                 h = ws.oddHeader
                 h.left.text = name
                 h.left.size = 20
