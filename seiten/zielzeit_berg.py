@@ -12,7 +12,8 @@ CSV_MAPPING_PATH = os.path.join("Datenbank", "Zuordnung_RFID.csv")
 TABELLEN_ORDNER = "Datenbank"
 BAUDRATE = 115200
 
-class ZielzeitErfassungFrame(ctk.CTkFrame):
+# Erfassung der Zielzeiten für das Bergrennen
+class ZielzeitBergErfassungFrame(ctk.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
         self.serial_port = None
@@ -21,16 +22,21 @@ class ZielzeitErfassungFrame(ctk.CTkFrame):
         self.tag_mapping = self.lade_tag_mapping()
         self.personen_df = self.lade_personen()
 
-        self.data = pd.DataFrame(columns=["Startnummer", "Vorname", "Nachname", "Jahrgang", "Wohnort", "Datum", "Zielzeit"])
+        self.data = pd.DataFrame(
+            columns=["Startnummer", "Vorname", "Nachname", "Jahrgang", "Wohnort", "Datum", "Zielzeit"]
+        )
         os.makedirs(TABELLEN_ORDNER, exist_ok=True)
         timestamp = datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        self.filename = os.path.join(TABELLEN_ORDNER, f"Zeitmessung_Ziel_{timestamp}.csv")
+        # Datei für das Bergrennen
+        self.filename = os.path.join(
+            TABELLEN_ORDNER, f"Zeitmessung_Ziel_Berg_{timestamp}.csv"
+        )
         self.data.to_csv(self.filename, index=False, sep=';', encoding="utf-8-sig")
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(3, weight=1)
 
-        self.label = ctk.CTkLabel(self, text="Zielzeit-Erfassung", font=("Arial", 20))
+        self.label = ctk.CTkLabel(self, text="Zielzeit-Erfassung Berg", font=("Arial", 20))
         self.label.grid(row=0, column=0, pady=10)
 
         self.port_combobox = ctk.CTkComboBox(self, values=self.list_ports())

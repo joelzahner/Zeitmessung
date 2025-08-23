@@ -36,47 +36,46 @@ class RanglisteFrame(ctk.CTkFrame):
         self.anzeige.grid(row=2, column=0, sticky="nsew", padx=10, pady=5)
 
     def generiere_rangliste(self):
-        start_files = [f for f in os.listdir(TABELLEN_ORDNER) if f.startswith("Zeitmessung_Start")]
-        ziel_files = [f for f in os.listdir(TABELLEN_ORDNER) if f.startswith("Zeitmessung_Ziel")]
+        def lade_race(prefix):
+            start_files = [f for f in os.listdir(TABELLEN_ORDNER) if f.startswith(f"Zeitmessung_Start_{prefix}")]
+            ziel_files = [f for f in os.listdir(TABELLEN_ORDNER) if f.startswith(f"Zeitmessung_Ziel_{prefix}")]
+            if not start_files or not ziel_files:
+                return None
+            start_df = pd.read_csv(
+                os.path.join(TABELLEN_ORDNER, start_files[-1]),
+                sep=";",
+                encoding="utf-8-sig",
+                dtype=str,
+            )
+            ziel_df = pd.read_csv(
+                os.path.join(TABELLEN_ORDNER, ziel_files[-1]),
+                sep=";",
+                encoding="utf-8-sig",
+                dtype=str,
+            )
+            merged = pd.merge(start_df, ziel_df, on="Startnummer", suffixes=("_start", "_ziel"))
 
-        if not start_files or not ziel_files:
-            messagebox.showerror("Fehler", "Start- oder Zielzeit-Datei(en) fehlen.")
-            return
-
-        start_df = pd.read_csv(
-            os.path.join(TABELLEN_ORDNER, start_files[-1]),
-            sep=";",
-            encoding="utf-8-sig",
-            dtype=str,
-        )
-        ziel_df = pd.read_csv(
-            os.path.join(TABELLEN_ORDNER, ziel_files[-1]),
-            sep=";",
-            encoding="utf-8-sig",
-            dtype=str,
-        )
-
-        merged = pd.merge(start_df, ziel_df, on="Startnummer", suffixes=("_start", "_ziel"))
-
-        def berechne_zeit(row):
-            try:
-                t1 = datetime.strptime(row["Startzeit"], "%H:%M:%S.%f")
-                t2 = datetime.strptime(row["Zielzeit"], "%H:%M:%S.%f")
-                delta = t2 - t1
-                if delta < timedelta(0):
+            def berechne_zeit(row):
+                try:
+                    t1 = datetime.strptime(row["Startzeit"], "%H:%M:%S.%f")
+                    t2 = datetime.strptime(row["Zielzeit"], "%H:%M:%S.%f")
+                    delta = t2 - t1
+                    if delta < timedelta(0):
+                        return pd.Series([None, None])
+                    total_seconds = delta.total_seconds()
+                    minutes = int(total_seconds // 60)
+                    seconds = int(total_seconds % 60)
+                    hundredths = int((total_seconds - int(total_seconds)) * 100)
+                    formatted = f"{minutes:02}:{seconds:02}:{hundredths:02}"
+                    return pd.Series([formatted, total_seconds])
+                except Exception:
                     return pd.Series([None, None])
-                total_seconds = delta.total_seconds()
-                minutes = int(total_seconds // 60)
-                seconds = int(total_seconds % 60)
-                hundredths = int((total_seconds - int(total_seconds)) * 100)
-                formatted = f"{minutes:02}:{seconds:02}:{hundredths:02}"
-                return pd.Series([formatted, total_seconds])
-            except Exception:
-                return pd.Series([None, None])
 
-        merged[["Rennzeit", "Rennzeit_Sekunden"]] = merged.apply(berechne_zeit, axis=1)
-        merged = merged.dropna(subset=["Rennzeit"])
-        merged["km/h"] = (DISTANZ_M / merged["Rennzeit_Sekunden"]) * 3.6
+            merged[["Rennzeit", "Rennzeit_Sekunden"]] = merged.apply(berechne_zeit, axis=1)
+            merged = merged.dropna(subset=["Rennzeit"])
+            merged["km/h"] = (DISTANZ_M / merged["Rennzeit_Sekunden"]) * 3.6
+            merged["Kategorie"] = merged.apply(bestimme_kategorie, axis=1)
+            return merged
 
         aktuelles_jahr = datetime.now().year
         junior_jahrgang = aktuelles_jahr - 15
@@ -107,8 +106,6 @@ class RanglisteFrame(ctk.CTkFrame):
                     return "Juniorinnen"
                 return "Damen"
 
-        merged["Kategorie"] = merged.apply(bestimme_kategorie, axis=1)
-
         def zeit_in_hundertstel(zeit_str: str) -> int:
             m, s, h = map(int, zeit_str.split(":"))
             return (m * 60 + s) * 100 + h
@@ -119,63 +116,128 @@ class RanglisteFrame(ctk.CTkFrame):
             hundertstel = cs % 100
             return f"{minuten:02}:{sekunden:02}:{hundertstel:02}"
 
-        kategorien_dfs = {}
-        for kat in KATEGORIEN_REIHENFOLGE:
-            df_kat = merged[merged["Kategorie"] == kat].copy()
-            if df_kat.empty:
-                continue
-            df_kat = df_kat.sort_values(by="Rennzeit_Sekunden").reset_index(drop=True)
-            df_kat["Rang"] = df_kat.index + 1
-            basis = zeit_in_hundertstel(df_kat["Rennzeit"].iloc[0])
-            df_kat["Rückstand"] = df_kat["Rennzeit"].apply(
-                lambda z: format_hundertstel(zeit_in_hundertstel(z) - basis)
-            )
-            df_kat.rename(
-                columns={
-                    "Vorname_ziel": "Vorname",
-                    "Nachname_ziel": "Nachname",
-                    "Jahrgang_ziel": "Jahrgang",
-                    "Wohnort_ziel": "Wohnort",
-                },
-                inplace=True,
-            )
-            df_kat["km/h"] = df_kat["km/h"].round(2)
-            df_kat = df_kat[
-                [
-                    "Rang",
-                    "Vorname",
-                    "Nachname",
-                    "Jahrgang",
-                    "Wohnort",
-                    "Rennzeit",
-                    "Rückstand",
-                    "km/h",
+        def kategorisieren(df):
+            kategorien_dfs = {}
+            for kat in KATEGORIEN_REIHENFOLGE:
+                df_kat = df[df["Kategorie"] == kat].copy()
+                if df_kat.empty:
+                    continue
+                df_kat = df_kat.sort_values(by="Rennzeit_Sekunden").reset_index(drop=True)
+                df_kat["Rang"] = df_kat.index + 1
+                basis = zeit_in_hundertstel(df_kat["Rennzeit"].iloc[0])
+                df_kat["Rückstand"] = df_kat["Rennzeit"].apply(
+                    lambda z: format_hundertstel(zeit_in_hundertstel(z) - basis)
+                )
+                df_kat.rename(
+                    columns={
+                        "Vorname_ziel": "Vorname",
+                        "Nachname_ziel": "Nachname",
+                        "Jahrgang_ziel": "Jahrgang",
+                        "Wohnort_ziel": "Wohnort",
+                    },
+                    inplace=True,
+                )
+                df_kat["km/h"] = df_kat["km/h"].round(2)
+                df_kat = df_kat[
+                    [
+                        "Rang",
+                        "Vorname",
+                        "Nachname",
+                        "Jahrgang",
+                        "Wohnort",
+                        "Rennzeit",
+                        "Rückstand",
+                        "km/h",
+                    ]
                 ]
-            ]
-            kategorien_dfs[kat] = df_kat
+                kategorien_dfs[kat] = df_kat
+            return kategorien_dfs
+
+        flach_df = lade_race("Flach")
+        berg_df = lade_race("Berg")
+
+        if flach_df is None or berg_df is None:
+            messagebox.showerror("Fehler", "Start- oder Zielzeit-Datei(en) fehlen.")
+            return
+
+        flach_kats = kategorisieren(flach_df)
+        berg_kats = kategorisieren(berg_df)
+
+        def format_seconds(sec):
+            m = int(sec // 60)
+            s = int(sec % 60)
+            h = int((sec - int(sec)) * 100)
+            return f"{m:02}:{s:02}:{h:02}"
+
+        gesamt = pd.merge(
+            flach_df[
+                [
+                    "Startnummer",
+                    "Vorname_ziel",
+                    "Nachname_ziel",
+                    "Jahrgang_ziel",
+                    "Wohnort_ziel",
+                    "Geschlecht",
+                    "Clubmitglied",
+                    "Rennzeit",
+                    "Rennzeit_Sekunden",
+                ]
+            ],
+            berg_df[["Startnummer", "Rennzeit", "Rennzeit_Sekunden"]],
+            on="Startnummer",
+            suffixes=("_flach", "_berg"),
+        )
+
+        gesamt["Rennzeit_Sekunden"] = (
+            gesamt["Rennzeit_Sekunden_flach"] + gesamt["Rennzeit_Sekunden_berg"]
+        )
+        gesamt["Rennzeit"] = gesamt["Rennzeit_Sekunden"].apply(format_seconds)
+        gesamt["km/h"] = ((DISTANZ_M * 2) / gesamt["Rennzeit_Sekunden"]) * 3.6
+        gesamt["Kategorie"] = gesamt.apply(bestimme_kategorie, axis=1)
+
+        gesamt_kats = kategorisieren(gesamt)
 
         with pd.ExcelWriter(AUSGABE_DATEI, engine="openpyxl") as writer:
             startrow = 0
-            for kat, df_kat in kategorien_dfs.items():
-                df_kat.to_excel(writer, sheet_name="Rangliste", startrow=startrow + 1, index=False)
-                sheet = writer.sheets["Rangliste"]
+            for kat, df_kat in flach_kats.items():
+                df_kat.to_excel(writer, sheet_name="Flach", startrow=startrow + 1, index=False)
+                sheet = writer.sheets["Flach"]
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 startrow += len(df_kat) + 3
 
-            # Seitenlayout + Kopfzeile setzen
-            ws = writer.sheets["Rangliste"]
-            ws.sheet_view.view = "pageLayout"  # Seitenlayout
+            startrow = 0
+            for kat, df_kat in berg_kats.items():
+                df_kat.to_excel(writer, sheet_name="Berg", startrow=startrow + 1, index=False)
+                sheet = writer.sheets["Berg"]
+                sheet.cell(row=startrow + 1, column=1, value=kat)
+                startrow += len(df_kat) + 3
 
-            h = ws.oddHeader
-            h.left.text = "XX. Flachrennen"
-            h.left.size = 20
+            startrow = 0
+            for kat, df_kat in gesamt_kats.items():
+                df_kat.to_excel(writer, sheet_name="Gesamt", startrow=startrow + 1, index=False)
+                sheet = writer.sheets["Gesamt"]
+                sheet.cell(row=startrow + 1, column=1, value=kat)
+                startrow += len(df_kat) + 3
 
+            for name in ["Flach", "Berg", "Gesamt"]:
+                ws = writer.sheets[name]
+                ws.sheet_view.view = "pageLayout"
+                h = ws.oddHeader
+                h.left.text = name
+                h.left.size = 20
 
         text_output = ""
-        for kat, df_kat in kategorien_dfs.items():
-            text_output += f"{kat}\n"
-            text_output += df_kat.to_string(index=False)
-            text_output += "\n\n"
+        def append_text(title, kat_dict):
+            nonlocal text_output
+            text_output += f"{title}\n"
+            for kat, df_kat in kat_dict.items():
+                text_output += f"{kat}\n"
+                text_output += df_kat.to_string(index=False)
+                text_output += "\n\n"
+
+        append_text("Flachrennen", flach_kats)
+        append_text("Bergrennen", berg_kats)
+        append_text("Gesamtwertung", gesamt_kats)
 
         self.anzeige.delete("1.0", "end")
         self.anzeige.insert("1.0", text_output.strip())
