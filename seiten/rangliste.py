@@ -7,6 +7,7 @@ from openpyxl.worksheet.header_footer import HeaderFooter
 
 TABELLEN_ORDNER = "Datenbank"
 AUSGABE_DATEI = os.path.join(TABELLEN_ORDNER, "Rangliste.xlsx")
+DISTANZ_M = 8480  # Streckenlänge in Metern
 
 KATEGORIEN_REIHENFOLGE = [
     "Herren",
@@ -57,23 +58,25 @@ class RanglisteFrame(ctk.CTkFrame):
 
         merged = pd.merge(start_df, ziel_df, on="Startnummer", suffixes=("_start", "_ziel"))
 
-        def berechne_zeit_formatiert(row):
+        def berechne_zeit(row):
             try:
                 t1 = datetime.strptime(row["Startzeit"], "%H:%M:%S.%f")
                 t2 = datetime.strptime(row["Zielzeit"], "%H:%M:%S.%f")
                 delta = t2 - t1
                 if delta < timedelta(0):
-                    return None
+                    return pd.Series([None, None])
                 total_seconds = delta.total_seconds()
                 minutes = int(total_seconds // 60)
                 seconds = int(total_seconds % 60)
                 hundredths = int((total_seconds - int(total_seconds)) * 100)
-                return f"{minutes:02}:{seconds:02}:{hundredths:02}"
+                formatted = f"{minutes:02}:{seconds:02}:{hundredths:02}"
+                return pd.Series([formatted, total_seconds])
             except Exception:
-                return None
+                return pd.Series([None, None])
 
-        merged["Rennzeit"] = merged.apply(berechne_zeit_formatiert, axis=1)
+        merged[["Rennzeit", "Rennzeit_Sekunden"]] = merged.apply(berechne_zeit, axis=1)
         merged = merged.dropna(subset=["Rennzeit"])
+        merged["km/h"] = (DISTANZ_M / merged["Rennzeit_Sekunden"]) * 3.6
 
         aktuelles_jahr = datetime.now().year
         junior_jahrgang = aktuelles_jahr - 15
@@ -121,7 +124,7 @@ class RanglisteFrame(ctk.CTkFrame):
             df_kat = merged[merged["Kategorie"] == kat].copy()
             if df_kat.empty:
                 continue
-            df_kat = df_kat.sort_values(by="Rennzeit").reset_index(drop=True)
+            df_kat = df_kat.sort_values(by="Rennzeit_Sekunden").reset_index(drop=True)
             df_kat["Rang"] = df_kat.index + 1
             basis = zeit_in_hundertstel(df_kat["Rennzeit"].iloc[0])
             df_kat["Rückstand"] = df_kat["Rennzeit"].apply(
@@ -136,6 +139,9 @@ class RanglisteFrame(ctk.CTkFrame):
                 },
                 inplace=True,
             )
+            df_kat["km/h"] = df_kat["km/h"].round(2)
+            df_kat = df_kat[["Rang", "Vorname", "Nachname", "Jahrgang", "Wohnort", "Rennzeit", "km/h"]]
+
             df_kat = df_kat[
                 [
                     "Rang",
