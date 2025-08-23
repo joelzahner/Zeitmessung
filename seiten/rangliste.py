@@ -221,11 +221,17 @@ class RanglisteFrame(ctk.CTkFrame):
 
         gesamt_kats = kategorisieren(gesamt)
 
+        def remove_header_border(sheet, startrow, df):
+            header_row = startrow + 2
+            for col in range(1, df.shape[1] + 1):
+                sheet.cell(row=header_row, column=col).border = Border()
+
         with pd.ExcelWriter(AUSGABE_DATEI, engine="openpyxl") as writer:
             startrow = 0
             for kat, df_kat in flach_kats.items():
                 df_kat.to_excel(writer, sheet_name="Flachrennen", startrow=startrow + 1, index=False)
                 sheet = writer.sheets["Flachrennen"]
+                remove_header_border(sheet, startrow, df_kat)
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 startrow += len(df_kat) + 3
 
@@ -233,6 +239,7 @@ class RanglisteFrame(ctk.CTkFrame):
             for kat, df_kat in berg_kats.items():
                 df_kat.to_excel(writer, sheet_name="Bergrennen", startrow=startrow + 1, index=False)
                 sheet = writer.sheets["Bergrennen"]
+                remove_header_border(sheet, startrow, df_kat)
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 startrow += len(df_kat) + 3
 
@@ -242,6 +249,7 @@ class RanglisteFrame(ctk.CTkFrame):
                     writer, sheet_name="Gesamtwertung", startrow=startrow + 1, index=False
                 )
                 sheet = writer.sheets["Gesamtwertung"]
+                remove_header_border(sheet, startrow, df_kat)
                 sheet.cell(row=startrow + 1, column=1, value=kat)
                 startrow += len(df_kat) + 3
 
