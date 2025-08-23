@@ -76,7 +76,7 @@ class VeloApp(ctk.CTk):
 
         for i, (label, func) in enumerate(self.menu_buttons.items()):
             btn = ctk.CTkButton(self.menu_frame, text=label, command=func, height=60)
-            btn.grid(row=i // 2, column=i % 2, padx=20, pady=20, sticky="nsew")
+            btn.grid(row=i // 2, column=i % 2, padx=10, pady=10, sticky="nsew")
 
         self.current_frame = None
 
