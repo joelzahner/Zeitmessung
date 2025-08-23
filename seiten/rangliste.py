@@ -137,19 +137,42 @@ class RanglisteFrame(ctk.CTkFrame):
                     },
                     inplace=True,
                 )
-                df_kat["km/h"] = df_kat["km/h"].round(2)
-                df_kat = df_kat[
-                    [
-                        "Rang",
-                        "Vorname",
-                        "Nachname",
-                        "Jahrgang",
-                        "Wohnort",
-                        "Rennzeit",
-                        "Rückstand",
-                        "km/h",
+                if "km/h" in df_kat.columns:
+                    df_kat["km/h"] = df_kat["km/h"].round(2)
+                if {"Rennzeit_flach", "Rennzeit_berg"}.issubset(df_kat.columns):
+                    df_kat.rename(
+                        columns={
+                            "Rennzeit_flach": "Rennzeit Flach",
+                            "Rennzeit_berg": "Rennzeit Berg",
+                        },
+                        inplace=True,
+                    )
+                    df_kat = df_kat[
+                        [
+                            "Rang",
+                            "Vorname",
+                            "Nachname",
+                            "Jahrgang",
+                            "Wohnort",
+                            "Rennzeit Flach",
+                            "Rennzeit Berg",
+                            "Rennzeit",
+                            "Rückstand",
+                        ]
                     ]
-                ]
+                else:
+                    df_kat = df_kat[
+                        [
+                            "Rang",
+                            "Vorname",
+                            "Nachname",
+                            "Jahrgang",
+                            "Wohnort",
+                            "Rennzeit",
+                            "Rückstand",
+                            "km/h",
+                        ]
+                    ]
                 kategorien_dfs[kat] = df_kat
             return kategorien_dfs
 
@@ -192,7 +215,6 @@ class RanglisteFrame(ctk.CTkFrame):
             gesamt["Rennzeit_Sekunden_flach"] + gesamt["Rennzeit_Sekunden_berg"]
         )
         gesamt["Rennzeit"] = gesamt["Rennzeit_Sekunden"].apply(format_seconds)
-        gesamt["km/h"] = ((DISTANZ_M * 2) / gesamt["Rennzeit_Sekunden"]) * 3.6
         gesamt["Kategorie"] = gesamt.apply(bestimme_kategorie, axis=1)
 
         gesamt_kats = kategorisieren(gesamt)
