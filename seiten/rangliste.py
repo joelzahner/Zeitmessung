@@ -26,7 +26,7 @@ KATEGORIEN_REIHENFOLGE = [
 
 def px_to_width(px: int) -> float:
     """Approximate conversion from pixels to Excel column width."""
-    return round((px - 5) / 7, 2)
+    return round(px / 7.5, 2)
 
 class RanglisteFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -232,20 +232,36 @@ class RanglisteFrame(ctk.CTkFrame):
             for kat, df_kat in flach_kats.items():
                 df_kat.to_excel(writer, sheet_name="Flachrennen", startrow=startrow + 1, index=False)
                 sheet = writer.sheets["Flachrennen"]
+                sheet.insert_rows(startrow + 1)
                 sheet.cell(row=startrow + 1, column=1, value=kat)
+                sheet.merge_cells(
+                    start_row=startrow + 1,
+                    start_column=1,
+                    end_row=startrow + 1,
+                    end_column=df_kat.shape[1],
+                )
                 for col in range(1, df_kat.shape[1] + 1):
-                    cell = sheet.cell(row=startrow + 1, column=col)
-                    cell.border = Border(bottom=Side(style="thick"))
+                    sheet.cell(row=startrow + 1, column=col).border = Border(
+                        bottom=Side(style="thick")
+                    )
                 startrow += len(df_kat) + 3
 
             startrow = 0
             for kat, df_kat in berg_kats.items():
                 df_kat.to_excel(writer, sheet_name="Bergrennen", startrow=startrow + 1, index=False)
                 sheet = writer.sheets["Bergrennen"]
+                sheet.insert_rows(startrow + 1)
                 sheet.cell(row=startrow + 1, column=1, value=kat)
+                sheet.merge_cells(
+                    start_row=startrow + 1,
+                    start_column=1,
+                    end_row=startrow + 1,
+                    end_column=df_kat.shape[1],
+                )
                 for col in range(1, df_kat.shape[1] + 1):
-                    cell = sheet.cell(row=startrow + 1, column=col)
-                    cell.border = Border(bottom=Side(style="thick"))
+                    sheet.cell(row=startrow + 1, column=col).border = Border(
+                        bottom=Side(style="thick")
+                    )
                 startrow += len(df_kat) + 3
 
             startrow = 0
@@ -254,10 +270,18 @@ class RanglisteFrame(ctk.CTkFrame):
                     writer, sheet_name="Gesamtwertung", startrow=startrow + 1, index=False
                 )
                 sheet = writer.sheets["Gesamtwertung"]
+                sheet.insert_rows(startrow + 1)
                 sheet.cell(row=startrow + 1, column=1, value=kat)
+                sheet.merge_cells(
+                    start_row=startrow + 1,
+                    start_column=1,
+                    end_row=startrow + 1,
+                    end_column=df_kat.shape[1],
+                )
                 for col in range(1, df_kat.shape[1] + 1):
-                    cell = sheet.cell(row=startrow + 1, column=col)
-                    cell.border = Border(bottom=Side(style="thick"))
+                    sheet.cell(row=startrow + 1, column=col).border = Border(
+                        bottom=Side(style="thick")
+                    )
                 startrow += len(df_kat) + 3
 
             for name in ["Flachrennen", "Bergrennen", "Gesamtwertung"]:
