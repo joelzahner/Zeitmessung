@@ -82,7 +82,7 @@ class RanglisteFrame(ctk.CTkFrame):
 
             merged[["Rennzeit", "Rennzeit_Sekunden"]] = merged.apply(berechne_zeit, axis=1)
             merged = merged.dropna(subset=["Rennzeit"])
-            merged["km/h"] = (DISTANZ_M / merged["Rennzeit_Sekunden"]) * 3.6
+            merged["⌀km/h"] = (DISTANZ_M / merged["Rennzeit_Sekunden"]) * 3.6
             merged["Kategorie"] = merged.apply(bestimme_kategorie, axis=1)
             return merged
 
@@ -146,8 +146,8 @@ class RanglisteFrame(ctk.CTkFrame):
                     },
                     inplace=True,
                 )
-                if "km/h" in df_kat.columns:
-                    df_kat["km/h"] = df_kat["km/h"].round(2)
+                if "⌀km/h" in df_kat.columns:
+                    df_kat["⌀km/h"] = df_kat["⌀km/h"].round(2)
                 if {"Rennzeit_flach", "Rennzeit_berg"}.issubset(df_kat.columns):
                     df_kat.rename(
                         columns={
@@ -179,7 +179,7 @@ class RanglisteFrame(ctk.CTkFrame):
                             "Wohnort",
                             "Rennzeit",
                             "Rückstand",
-                            "km/h",
+                            "⌀km/h",
                         ]
                     ]
                 kategorien_dfs[kat] = df_kat
@@ -318,9 +318,9 @@ class RanglisteFrame(ctk.CTkFrame):
                         cell.alignment = Alignment(horizontal="left")
                 widths = []
                 if name in ["Flachrennen", "Bergrennen"]:
-                    widths = [84, 125, 125, 110, 110, 120, 120, 130]
+                    widths = [68, 100, 100, 88, 88, 96, 96, 104]
                 elif name == "Gesamtwertung":
-                    widths = [65, 125, 125, 85, 85, 110, 110, 110, 105]
+                    widths = [52, 100, 100, 68, 68, 88, 88, 88, 84]
                 if widths:
                     for idx, px in enumerate(widths, 1):
                         ws.column_dimensions[get_column_letter(idx)].width = px_to_width(px)

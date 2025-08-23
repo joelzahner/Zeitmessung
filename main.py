@@ -28,13 +28,13 @@ class VeloApp(ctk.CTk):
         self.grid_rowconfigure(0, weight=1)
 
         # Sidebar
-        self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=0)
+        self.sidebar = ctk.CTkFrame(self, width=200, corner_radius=7)
         self.sidebar.grid(row=0, column=0, sticky="nswe")
         self.sidebar.grid_rowconfigure(7, weight=1)
 
         self.menu_buttons = {
             "RFID-Zuordnung": self.show_rfid,
-            "Personenanmeldung": self.show_person,
+            "Anmeldung": self.show_person,
             "Startzeit Flach": self.show_start_flach,
             "Startzeit Berg": self.show_start_berg,
             "Zielzeit Flach": self.show_ziel_flach,
