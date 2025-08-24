@@ -7,8 +7,11 @@ import os
 from tkinter import messagebox
 from datetime import datetime
 
+from paths import data_dir
+DATA_DIR = data_dir()
+
 BAUDRATE = 115200
-CSV_PATH = os.path.join("Datenbank", "Zuordnung_RFID.csv")
+CSV_PATH = os.path.join(DATA_DIR, "Zuordnung_RFID.csv")
 
 class RFIDZuordnungFrame(ctk.CTkFrame):
     def __init__(self, master):
@@ -37,7 +40,7 @@ class RFIDZuordnungFrame(ctk.CTkFrame):
         self.counter_label = ctk.CTkLabel(self, text=f"Zugeordnete Tags: {len(self.tag_mapping)}")
         self.counter_label.pack(pady=5)
 
-        os.makedirs("Datenbank", exist_ok=True)
+        os.makedirs(DATA_DIR, exist_ok=True)
 
     def list_serial_ports(self):
         ports = serial.tools.list_ports.comports()

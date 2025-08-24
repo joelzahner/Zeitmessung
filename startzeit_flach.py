@@ -4,8 +4,11 @@ from datetime import datetime
 import os
 from tkinter import messagebox
 
-ANMELDUNG_PATH = os.path.join("Datenbank", "Anmeldung.csv")
-TABELLEN_ORDNER = "Datenbank"
+from paths import data_dir
+DATA_DIR = data_dir()
+
+ANMELDUNG_PATH = os.path.join(DATA_DIR, "Anmeldung.csv")
+TABELLEN_ORDNER = DATA_DIR
 
 # Erfassung der Startzeiten für das Flachrennen
 class StartzeitFlachErfassungFrame(ctk.CTkFrame):

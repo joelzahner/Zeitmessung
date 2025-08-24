@@ -3,7 +3,10 @@ import pandas as pd
 import os
 from tkinter import messagebox
 
-CSV_PATH = os.path.join("Datenbank", "Anmeldung.csv")
+from paths import data_dir
+DATA_DIR = data_dir()
+
+CSV_PATH = os.path.join(DATA_DIR, "Anmeldung.csv")
 SPALTEN = [
     "Startnummer",
     "Vorname",
@@ -20,7 +23,7 @@ class anmeldungFrame(ctk.CTkFrame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
 
-        os.makedirs("Datenbank", exist_ok=True)
+        os.makedirs(DATA_DIR, exist_ok=True)
         self.daten = self.lade_csv()
 
         self.label = ctk.CTkLabel(self, text="Anmeldung", font=("Arial", 20))

@@ -9,7 +9,10 @@ from openpyxl.styles import Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font
 
-TABELLEN_ORDNER = "Datenbank"
+from paths import data_dir
+DATA_DIR = data_dir()
+
+TABELLEN_ORDNER = DATA_DIR
 AUSGABE_DATEI = os.path.join(TABELLEN_ORDNER, "Rangliste.xlsx")
 DISTANZ_M = 8480  # Streckenlänge in Metern
 

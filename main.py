@@ -4,15 +4,15 @@ import tkinter as tk
 from PIL import Image, ImageTk
 import os
 
-from seiten.rfid_zuordnung import RFIDZuordnungFrame
-from seiten.anmeldung import anmeldungFrame
-from seiten.startzeit_flach import StartzeitFlachErfassungFrame
-from seiten.startzeit_berg import StartzeitBergErfassungFrame
-from seiten.zielzeit_flach import ZielzeitFlachErfassungFrame
-from seiten.zielzeit_berg import ZielzeitBergErfassungFrame
-from seiten.rangliste import RanglisteFrame
+from rfid_zuordnung import RFIDZuordnungFrame
+from anmeldung import anmeldungFrame
+from startzeit_flach import StartzeitFlachErfassungFrame
+from startzeit_berg import StartzeitBergErfassungFrame
+from zielzeit_flach import ZielzeitFlachErfassungFrame
+from zielzeit_berg import ZielzeitBergErfassungFrame
+from rangliste import RanglisteFrame
 from openpyxl.worksheet.header_footer import HeaderFooter
-
+from paths import resource_path
 
 # GUI-Initialisierung
 ctk.set_appearance_mode("light")
@@ -21,9 +21,9 @@ ctk.set_default_color_theme("blue")
 def show_splash(duration: int = 2000) -> None:
     splash = tk.Tk()
     splash.overrideredirect(True)
-    splash.iconbitmap("vcm_start.ico")
+    splash.iconbitmap(resource_path("vcm_start.ico"))
 
-    image = Image.open("vcm_start.ico")
+    image = Image.open(resource_path("vcm_start.ico"))
     photo = ImageTk.PhotoImage(image)
     label = tk.Label(splash, image=photo)
     label.image = photo
@@ -47,7 +47,7 @@ class VeloApp(ctk.CTk):
         super().__init__()
         self.title("VCM Zeitmessung")
         self.geometry("1000x600")
-        self.iconbitmap("vcm.ico")
+        self.iconbitmap(resource_path("vcm.ico"))
 
         # Layout-Konfiguration
         self.grid_rowconfigure(0, weight=1)

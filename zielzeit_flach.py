@@ -8,8 +8,11 @@ import os
 from tkinter import messagebox
 import winsound
 
-CSV_MAPPING_PATH = os.path.join("Datenbank", "Zuordnung_RFID.csv")
-TABELLEN_ORDNER = "Datenbank"
+from paths import data_dir
+DATA_DIR = data_dir()
+
+CSV_MAPPING_PATH = os.path.join(DATA_DIR, "Zuordnung_RFID.csv")
+TABELLEN_ORDNER = DATA_DIR
 BAUDRATE = 115200
 
 # Erfassung der Zielzeiten für das Flachrennen
@@ -78,7 +81,7 @@ class ZielzeitFlachErfassungFrame(ctk.CTkFrame):
         return {}
 
     def lade_personen(self):
-        path = os.path.join("Datenbank", "Anmeldung.csv")
+        path = os.path.join(DATA_DIR, "Anmeldung.csv")
         if os.path.exists(path):
             return pd.read_csv(path, sep=';', dtype=str, encoding="utf-8-sig")
         return pd.DataFrame(columns=["Startnummer", "Vorname", "Nachname", "Jahrgang", "Wohnort"])
