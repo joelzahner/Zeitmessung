@@ -4,7 +4,7 @@
 
 **Installation:** Lade "VCM-Zeitmessung-Setup.exe" herunter und installiere die App.
 
-**Dateien:** die erzeugten Dateien befinden sich unter *C:\Users\...\AppData\Local\VCM_Zeitmessung\Datenbank*
+**Dateien:** die erzeugten Dateien befinden sich unter *C:\Users\...\AppData\Local\VCM_Zeitmessung\Datenbank* (%LOCALAPPDATA%\VCM_Zeitmessung\Datenbank)
 
 <br><br>  
 
