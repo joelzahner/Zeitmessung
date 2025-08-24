@@ -3,6 +3,7 @@
 ## Benutzerinformationen
 
 **Installation:** Lade "VCM-Zeitmessung-Setup.exe" herunter und installiere die App.
+
 **Dateien:** die erzeugten Dateien befinden sich unter *C:\Users\...\AppData\Local\VCM_Zeitmessung\Datenbank*
 
 <br><br>  
@@ -34,10 +35,10 @@ pyinstaller `
   --hidden-import openpyxl.worksheet.header_footer `
   main.py
 
-**dowload "Inno Setup Compiler"**
+**Dowload "Inno Setup Compiler"**
 https://jrsoftware.org/isinfo.php
   
-**open "installer.iss" with inno Setup Compiler, change version number and save**
-**click on "compile"**
+**Open "installer.iss" with inno Setup Compiler, change version number and save**
+**Click on "compile"**
 
 
